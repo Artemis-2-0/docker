@@ -4,7 +4,7 @@ services:
   config-server:
     build:
       context: ../services/config-server
-    image: artemisprogetto/config-server:latest
+    image: artemis/config-server:latest
     container_name: config-server
     ports:
       - "6090:6090"
@@ -22,7 +22,7 @@ services:
   discovery-server:
     build:
       context: ../services/discovery-server
-    image: artemisprogetto/discovery-server:latest
+    image: artemis/discovery-server:latest
     container_name: discovery-server
     ports:
       - "6091:6091"  # updated port
@@ -43,7 +43,7 @@ services:
   api-gateway:
     build:
       context: ../services/api-gateway
-    image: artemisprogetto/api-gateway:latest
+    image: artemis/api-gateway:latest
     container_name: api-gateway
     ports:
       - "6092:6092"  # updated port
@@ -65,7 +65,7 @@ services:
   auth-service:
     build:
       context: ../services/auth-service
-    image: artemisprogetto/auth-service:latest
+    image: artemis/auth-service:latest
     container_name: auth-service
     ports:
       - "6094:6094"  # updated port
@@ -89,7 +89,7 @@ services:
   account-management:
     build:
       context: ../services/account-management
-    image: artemisprogetto/account-management:latest
+    image: artemis/account-management:latest
     container_name: account-management
     ports:
       - "6093:6093"  # updated port
@@ -106,6 +106,54 @@ services:
       - artemis-net
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:6093/actuator/health" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+  customer-management:
+    build:
+      context: ../services/customer-management
+    image: artemis/customer-management:latest
+    container_name: customer-management
+    ports:
+      - "6095:6095"  # updated port
+    env_file:
+      - customer-management.env
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - artemis-net
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:6095/actuator/health" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+  ledger-service:
+    build:
+      context: ../services/ledger-service
+    image: artemis/ledger-service:latest
+    container_name: ledger-service
+    ports:
+      - "6096:6096"  # updated port
+    env_file:
+      - ledger-service.env
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - artemis-net
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:6096/actuator/health" ]
       interval: 10s
       retries: 5
       start_period: 30s
